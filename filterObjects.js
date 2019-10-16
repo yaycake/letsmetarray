@@ -3,6 +3,19 @@ const fs = require ('fs')
 
 let filteredObjectsArray = [];
 
+//open and sort CSV -- housekeeping code 
+
+const sortCSV = () => {
+    fs.readFile('allObjects.csv', 'utf8', function(err, data) {
+        console.log("sorting csv")
+        var dataArray = data.split(",").sort(); 
+        fs.writeFile("allObjects.csv", dataArray, (err) => {
+            console.log(err)
+        })
+    })
+}
+// sortCSV()
+
 const openCSV = (callback) => {
     fs.readFile('allObjects.csv', 'utf8', function (err, data) {
         console.log(`[inOPENCSV]`)
@@ -27,7 +40,7 @@ const pingForImage = (artId) => {
         if (response.data.primaryImage) {
             console.log(`ARTID [${artId}] HAS IMAGE`)
             console.log(`- - - - - - - `)
-            filteredObjectsArray.push(artId)
+            filteredObjectsArray.sort().push(artId)
             writeCSV(filteredObjectsArray);
             return artId
         } 
@@ -35,24 +48,36 @@ const pingForImage = (artId) => {
     })
     .catch(error => {
         console.log('Problem fetching object!!')
-        console.log(error)
+        console.log(error.response.status)
+        console.log(error.response.statusText)
+        console.log(`ERROR URL: ${error.config.url}`)
     })
 }
 
 const filterObjects = (array) => {
-    array.forEach( (art, index) => {
+
+    setTimeout(()=>{
+        for (const art of array) {
+            // console.log(`THIS THE ART: ${art}`)
+            pingForImage(art)
+        }
+    }, 3000)
+    
+    // array.forEach( (art, index) => {
         // console.log(`THIS THE ART: ${art}`)
         // pingForImage(art)
         
-        setTimeout(() => {
-            console.log(`THIS THE ART: ${art}`)
-            pingForImage(art)
-            console.log(`PRINT PING: ${pingForImage(art)}`)
-        }, 1000)
-    })  
+        // setTimeout(() => {
+        //     console.log(`THIS THE ART: ${art}`)
+        //     pingForImage(art)
+        //     console.log(`PRINT PING: ${pingForImage(art)}`)
+        // }, 1000)
+    // })  
 }
 
 openCSV(filterObjects);
+
+
 
 
 
